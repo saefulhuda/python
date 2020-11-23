@@ -1,7 +1,7 @@
 import connection
 
 db = connection.db
-limit = 20
+limit = int(input("Limit raw data : "))
 
 def delete_queue(id):
 	request = db.cursor()
@@ -38,9 +38,10 @@ def insert_log(row):
 
 def get_queue(limit):
 	request = db.cursor()
-	query 	= "SELECT * FROM queue"
-	req = request.execute(query)
-	data = request.fetchmany(limit)
+	query 	= "SELECT * FROM queue LIMIT %s"
+	value = (limit,)
+	req = request.execute(query, value)
+	data = request.fetchall()
 	if request.rowcount > 0:
 		for row in data:
 			if row[4] <= 2000:
@@ -60,6 +61,16 @@ def get_queue(limit):
 	else:
 		print("Data not found")
 
+def raw_data(limit):
+	request = db.cursor()
+	query = "SELECT * FROM log LIMIT %s"
+	value = (limit,)
+	req = request.execute(query, value)
+	data = request.fetchall()
+	for row in data:
+		print(row)
+
 
 get_queue(limit)
 # delete_queue(msisdn)
+# raw_data(limit)
