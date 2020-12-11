@@ -9,17 +9,14 @@ db = mysql.connector.connect(
 	database='oomph'
 	)
 
-def insert(db):
-	nama		= input("Masukan nama : ")
-	email		= input("Masukan email : ")
-	passw 		= input("Masukan password : ")
-	password	= hashlib.md5(passw.encode('utf-8')).hexdigest()
-	value 	= (nama, email, password)
+def insert(db, name, email, password, flag):
+	password	= hashlib.md5(password.encode('utf-8')).hexdigest()
+	value 	= (name, email, password, flag)
 	request = db.cursor()
-	insert 	= "INSERT INTO users (name, email, password) VALUE (%s, %s, %s)"
+	insert 	= "INSERT INTO users (name, email, password, flag) VALUE (%s, %s, %s, %s)"
 	request.execute(insert, value)
 	db.commit()
-	print("{} data berhasil disimpan". format(request.rowcount))
+	return request.rowcount
 
 def  read(db):
 	request = db.cursor()
