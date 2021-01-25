@@ -1,0 +1,149 @@
+{% extends "crud/template.html" %}
+{% load static %}
+{% block pages %}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+	<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+		<h1 class="h2">Dashboard</h1>
+		<div class="btn-toolbar mb-2 mb-md-0">
+			<div class="btn-group me-2">
+				<a type="button" href="/crud/product/add" class="btn btn-sm btn-outline-secondary">Tambah Product</a>
+				<button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
+				<button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+			</div>
+		</div>
+	</div>
+	<div  class="table-responsive">
+		<table class="table">
+			<thead>
+				<tr>
+					<th scope="col">#</th>
+					<th scope="col">File</th>
+					<th scope="col">Description</th>
+					<th scope="col">Aksi</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for image in images %}
+				<tr>
+					<th scope="row">{{ image.id }}</th>
+					<td><img src="{{ image.file.url }}" class="img-fluid" style="width: 200px;"></td>
+					<td>{{ image.description }}</td>
+					<td>
+						<a class="btn btn-sm btn-success" href="#">Read </a>
+						<a class="btn btn-sm btn-dark" href="/crud/product/image/update/{{ image.id }}">Edit </a>
+						<a class="btn btn-sm btn-danger" href="/crud/product/image/delete/{{ image.id }}">Delete </a>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	<form method="post" enctype="multipart/form-data" id="formUpload">
+		{% csrf_token %}
+		{{ form.x }}
+		{{ form.y }}
+		{{ form.height }}
+		{{ form.width }}
+		<div class="row">
+			<div class="col-md-12">
+				<label>File</label>
+				{{ form.file }}
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-12">
+				<label>Description</label>
+				{{ form.description }}
+			</div>
+		</div>
+	</form>
+
+	<div>
+		
+	</div>
+
+	<div class="modal fade" id="modalCrop">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title">Crop the photo</h4>
+				</div>
+				<div class="modal-body">
+					<img src="" id="image" style="max-width: 100%;">
+				</div>
+				<div class="modal-footer">
+					<div class="btn-group pull-left" role="group">
+						<button type="button" class="btn btn-default js-zoom-in">
+							<span class="glyphicon glyphicon-zoom-in"></span>
+						</button>
+						<button type="button" class="btn btn-default js-zoom-out">
+							<span class="glyphicon glyphicon-zoom-out"></span>
+						</button>
+					</div>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Nevermind</button>
+					<button type="button" class="btn btn-primary js-crop-and-upload">Crop and upload</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</main>
+<script>
+    $(function () {
+
+      /* SCRIPT TO OPEN THE MODAL WITH THE PREVIEW */
+      $("#id_file").change(function () {
+        if (this.files && this.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+            $("#image").attr("src", e.target.result);
+            $("#modalCrop").modal("show");
+          }
+          reader.readAsDataURL(this.files[0]);
+        }
+      });
+
+      /* SCRIPTS TO HANDLE THE CROPPER BOX */
+      var $image = $("#image");
+      var cropBoxData;
+      var canvasData;
+      $("#modalCrop").on("shown.bs.modal", function () {
+        $image.cropper({
+          viewMode: 1,
+          aspectRatio: 1/1,
+          minCropBoxWidth: 200,
+          minCropBoxHeight: 200,
+          ready: function () {
+            $image.cropper("setCanvasData", canvasData);
+            $image.cropper("setCropBoxData", cropBoxData);
+          }
+        });
+      }).on("hidden.bs.modal", function () {
+        cropBoxData = $image.cropper("getCropBoxData");
+        canvasData = $image.cropper("getCanvasData");
+        $image.cropper("destroy");
+      });
+
+      $(".js-zoom-in").click(function () {
+        $image.cropper("zoom", 0.1);
+      });
+
+      $(".js-zoom-out").click(function () {
+        $image.cropper("zoom", -0.1);
+      });
+
+      /* SCRIPT TO COLLECT THE DATA AND POST TO THE SERVER */
+      $(".js-crop-and-upload").click(function () {
+        var cropData = $image.cropper("getData");
+        $("#id_x").val(cropData["x"]);
+        $("#id_y").val(cropData["y"]);
+        $("#id_height").val(cropData["height"]);
+        $("#id_width").val(cropData["width"]);
+        $("#formUpload").submit();
+      });
+
+    });
+  </script>
+{% endblock pages %}

@@ -55,3 +55,16 @@ class Transaction(models.Model):
 
 	def __str__(self):
 		return self.customer.name
+
+class ProductImage(models.Model):
+	"""docstring for ProductImage"""
+	file = models.ImageField(upload_to = 'static/')
+	description = models.TextField(blank=True)
+	uploaded_at = models.DateTimeField(auto_now_add=True)
+
+	def delete(self,*args,**kwargs):
+		import os
+		if os.path.isfile(self.file.path):
+			os.remove(self.file.path)
+		super(ProductImage, self).delete(*args,**kwargs)
+		

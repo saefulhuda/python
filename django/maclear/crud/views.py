@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from crud.models import Product
-from crud.forms import EditProductForm, AddProductForm
+from crud.models import Product, ProductImage
+from crud.forms import EditProductForm, AddProductForm, ProductImageForm
 
 # Create your views here.
 def products(request):
@@ -62,3 +62,23 @@ def product_add(request):
 		'form': addForm
 	}
 	return render(request, 'crud/addproduct.html', context)
+
+def product_images(request):
+    images = ProductImage.objects.all()
+    if request.method == 'POST':
+    	form = ProductImageForm(request.POST, request.FILES)
+    	if form.is_valid():
+    		form.save()
+    		return redirect('/crud/product/images')
+    	else:
+    		return HttpResponse(form.errors)
+    else:
+        form = ProductImageForm()
+    context = {'form': form, 'images': images}
+    return render(request, 'crud/allproductimage.html', context)
+
+def product_image_delete(request, id = 0):
+	product_image = ProductImage.objects.get(pk = id)
+	if product_image:
+		ProductImage.objects.get(pk = id).delete()
+	return redirect('/crud/product/images')
